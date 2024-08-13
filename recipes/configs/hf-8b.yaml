@@ -1,7 +1,6 @@
 model:
   _component_: torchtune.models.llama3_1.llama3_1_8b
-  transformer_class:
-    _component_cls_: torchtune.modules.transformer.HFTransformerDecoder
+  transformer_class: torchtune.modules.transformer.HFTransformerDecoder
 
 checkpointer:
   _component_: torchtune.utils.FullModelHFCheckpointer
