@@ -37,6 +37,12 @@ def _has_component(node: Union[Dict[str, Any], DictConfig]) -> bool:
     return (OmegaConf.is_dict(node) or isinstance(node, dict)) and "_component_" in node
 
 
+def _has_component_cls(node: Union[Dict[str, Any], DictConfig]) -> bool:
+    return (
+        OmegaConf.is_dict(node) or isinstance(node, dict)
+    ) and "_component_cls_" in node
+
+
 def _get_component_from_path(path: str) -> Any:
     """
     Return an object by name or dotted path, importing as necessary.

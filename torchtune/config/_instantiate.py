@@ -9,7 +9,11 @@ from typing import Any, Callable, Dict, Tuple
 
 from omegaconf import DictConfig, OmegaConf
 from torchtune.config._errors import InstantiationError
-from torchtune.config._utils import _get_component_from_path, _has_component
+from torchtune.config._utils import (
+    _get_component_from_path,
+    _has_component,
+    _has_component_cls,
+)
 
 
 def _create_component(
@@ -29,6 +33,9 @@ def _instantiate_node(node: DictConfig, *args: Tuple[Any, ...]):
         _component_ = _get_component_from_path(node.get("_component_"))
         kwargs = {k: v for k, v in node.items() if k != "_component_"}
         return _create_component(_component_, args, kwargs)
+    if _has_component_cls(node):
+        _component_cls_ = _get_component_from_path(node.get("_component_cls_"))
+        return _component_cls_
     else:
         raise InstantiationError(
             "Cannot instantiate specified object."
