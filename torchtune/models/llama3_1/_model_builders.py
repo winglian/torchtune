@@ -3,9 +3,10 @@
 #
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
-from typing import List, Optional
+from typing import List, Optional, Type
 from functools import partial
 
+from torch import nn
 from torchtune.models.llama3_1._component_builders import llama3_1, lora_llama3_1
 
 from torchtune.modules import TransformerDecoder
@@ -21,7 +22,9 @@ Llama3.1 8B model.
 """
 
 
-def llama3_1_8b() -> TransformerDecoder:
+def llama3_1_8b(
+        transformer_class: Type[nn.Module] = TransformerDecoder,
+) -> TransformerDecoder:
     """
     Builder for creating a Llama3.1 model initialized w/ the default 8b parameter values.
 
@@ -39,6 +42,7 @@ def llama3_1_8b() -> TransformerDecoder:
         attn_dropout=0.0,
         norm_eps=1e-5,
         rope_base=500000.0,
+        transformer_class=transformer_class,
     )
 
 

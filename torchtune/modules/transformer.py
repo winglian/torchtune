@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 import copy
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -259,6 +259,33 @@ class TransformerDecoder(nn.Module):
         # shape: [b, s, out_dim] - out_dim is usually the vocab size
         output = self.output(h).float()
         return output
+
+
+class HFTransformerDecoder(TransformerDecoder):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._loss_fn = torch.nn.CrossEntropyLoss()
+
+    def forward(
+        self,
+        input_ids: torch.LongTensor = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        labels: Optional[torch.LongTensor] = None,
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+        logits = super().forward(
+            tokens=input_ids, mask=attention_mask, input_pos=position_ids, labels=labels
+        )
+        # Shift so that tokens < n predict n
+        logits = logits[..., :-1, :].contiguous()
+        labels = labels[..., 1:].contiguous()
+        logits = logits.transpose(1, 2)
+        # Compute loss
+        loss = self._loss_fn(logits, labels)
+        # free logits otherwise it peaks backward memory
+        del logits
+
+        return loss, None
 
 
 class TiedEmbeddingTransformerDecoder(nn.Module):

@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 
 from functools import partial
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Type
 
 from torch import nn
 
@@ -48,9 +48,10 @@ def llama3_1(
     embed_dim: int,
     max_seq_len: int,
     attn_dropout: float = 0.0,
-    rope_base: int = 500000.0,
+    rope_base: int = 500_000.0,
     intermediate_dim: Optional[int] = None,
     norm_eps: float = 1e-5,
+    transformer_class: Type[nn.Module] = TransformerDecoder,
 ) -> TransformerDecoder:
     """
     Build the decoder associated with the Llama3.1 model. This includes:
@@ -72,9 +73,11 @@ def llama3_1(
             by :func:`~torchtune.modules.KVCache`
         attn_dropout (float): dropout value passed onto scaled_dot_product_attention.
             Default: 0.0
+        rope_base (int): base value for RoPE. Default: 50000
         intermediate_dim (Optional[int]): intermediate dimension for MLP. If not specified,
             this is computed using :func:`~torchtune.modules.scale_hidden_dim_for_mlp`
         norm_eps (float): epsilon in RMS norms.
+        transformer_class (Type[TransformerDecoder]): class to use for the transformer. Default: TransformerDecoder
 
     Returns:
         TransformerDecoder: Instantiation of Llama3.1 model.
@@ -105,7 +108,7 @@ def llama3_1(
     )
     tok_embeddings = nn.Embedding(vocab_size, embed_dim)
     output_proj = nn.Linear(embed_dim, vocab_size, bias=False)
-    return TransformerDecoder(
+    return transformer_class(
         tok_embeddings=tok_embeddings,
         layer=layer,
         num_layers=num_layers,
